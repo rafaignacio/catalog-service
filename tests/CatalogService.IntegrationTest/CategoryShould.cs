@@ -6,6 +6,7 @@ using FluentAssertions;
 
 namespace CatalogService.IntegrationTest;
 
+[Order(1)]
 public class CategoryShould
 {
     private Category _sut = new Category(
@@ -19,22 +20,22 @@ public class CategoryShould
     [Test, Order(1)]
     public async Task Create_a_new_category_successfully()
     {
-        var response = await _sut.Add(new("Stationary", null, null));
+        var response = await _sut.Add(new("Stationery", null, null));
         response.IsT0.Should().BeTrue();
     }
 
     [Test, Order(2)]
     public async Task Add_a_new_child_category()
     {
-        var response = await _sut.Add(new("Staples", "staples.png", "Stationary"));
+        var response = await _sut.Add(new("Staples", "staples.png", "Stationery"));
         response.IsT0.Should().BeTrue();
     }
 
     [Test, Order(3)]
     public async Task Update_category_data_successfully()
     {
-        var name = "Stationary";
-        var image = "stationary.png";
+        var name = "Stationery";
+        var image = "stationery.png";
 
         var response = await _sut.Update( new (name, image, null) );
         response.IsT0.Should().BeTrue();
