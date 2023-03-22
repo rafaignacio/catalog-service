@@ -12,7 +12,8 @@ public class SetupTests
     {
         _connection = new SqliteConnection(Constants.ConnectionString);
         await _connection.OpenAsync();
-        await _connection.ExecuteAsync(CreateCategoryDatabase());
+        await _connection.ExecuteAsync(CreateCategoryTable());
+        await _connection.ExecuteAsync(CreateItemTable());
     }
 
     [OneTimeTearDown]
@@ -22,11 +23,22 @@ public class SetupTests
         _connection?.Dispose();
     }
 
-    public CommandDefinition CreateCategoryDatabase() =>
+    public CommandDefinition CreateCategoryTable() =>
         new (@"
             CREATE TABLE Category (
                 Name    VARCHAR(50) PRIMARY KEY,
                 Image   TEXT,
                 Parent  VARCHAR(50))");
+
+    public CommandDefinition CreateItemTable() =>
+        new(@"
+            CREATE TABLE Item (
+                Name        VARCHAR(50) PRIMARY KEY,
+                Description TEXT,
+                Image       TEXT,
+                Category    VARCHAR(50) NOT NULL,
+                Price       REAL NOT NULL,
+                Amount      INTEGER NOT NULL,
+                FOREIGN KEY (Category) REFERENCES Category(Name))");
 
 }

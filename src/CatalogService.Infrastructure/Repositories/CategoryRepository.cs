@@ -17,7 +17,7 @@ public class CategoryRepository : BaseRepository, ICategoryRepository
     public async Task Add(CategoryModel model, CancellationToken token = default) => 
         await ExecuteAsync(@"
             INSERT INTO Category ( Name, Image, Parent )
-            VALUES ( @Name, @Image, @Parent );", new { model.Name, model.Image, model.Parent  }, token);
+            VALUES ( @Name, @Image, @Parent );", model, token);
 
     public async Task Delete(string name, CancellationToken token = default) => 
         await ExecuteAsync("DELETE FROM Category WHERE Name = @Name", new { Name = name }, token);
