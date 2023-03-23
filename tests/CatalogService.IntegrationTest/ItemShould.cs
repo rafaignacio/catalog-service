@@ -51,4 +51,12 @@ public class ItemShould
         var category = await _sut.GetAll();
         category.IsT1.Should().BeTrue();
     }
+
+    [Test, Order(4)]
+    public async Task Indicate_failure_when_adding_item_to_an_unexisting_category()
+    {
+        var response = await _sut.Add(new("Mouse", null, null, "IT", 10.0, 100));
+        response.IsT1.Should().BeTrue();
+        response.AsT1.Message.Should().Contain("constraint failed");
+    }
 }
