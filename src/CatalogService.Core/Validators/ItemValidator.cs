@@ -3,7 +3,7 @@ using FluentValidation;
 
 namespace CatalogService.Core.Validators;
 
-public class ItemValidator : AbstractValidator<ItemModel>
+public class ItemValidator : AbstractValidator<ItemDetailsModel>
 {
     public ItemValidator()
     {

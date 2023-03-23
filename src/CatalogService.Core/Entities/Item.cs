@@ -9,18 +9,18 @@ namespace CatalogService.Core.Entities;
 
 public class Item
 {
-    private readonly IValidator<ItemModel> _validator;
+    private readonly IValidator<ItemDetailsModel> _validator;
     private readonly IItemRepository _repository;
     private readonly CancellationToken _cancellationToken;
 
-    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
+    public Item(IValidator<ItemDetailsModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
     {
         _validator = validator;
         _repository = repository;
         _cancellationToken = cancellationToken;
     }
 
-    public async Task<OneOf<Success, ItemFailureException>> Add(ItemModel item)
+    public async Task<OneOf<Success, ItemFailureException>> Add(ItemDetailsModel item)
     {
         var validate = _validator.Validate(item);
 
@@ -39,7 +39,7 @@ public class Item
         return new Success();
     }
 
-    public async Task<OneOf<Success, NotFound, ItemFailureException>> Update(ItemModel category)
+    public async Task<OneOf<Success, NotFound, ItemFailureException>> Update(ItemDetailsModel category)
     {
         var validate = _validator.Validate(category);
 
@@ -80,7 +80,7 @@ public class Item
         return new Success();
     }
 
-    public async Task<OneOf<IReadOnlyCollection<ItemModel>, None>> GetAll()
+    public async Task<OneOf<IReadOnlyCollection<ItemDetailsModel>, None>> GetAll()
     {
         var response = await _repository.GetAll(_cancellationToken);
 
@@ -90,7 +90,7 @@ public class Item
         return response!.ToList().AsReadOnly();
     }
 
-    public async Task<OneOf<ItemModel, None>> GetByName(string name)
+    public async Task<OneOf<ItemDetailsModel, None>> GetByName(string name)
     {
         var response = await _repository.GetByName(name, _cancellationToken);
 
