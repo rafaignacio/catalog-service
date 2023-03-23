@@ -9,18 +9,18 @@ namespace CatalogService.Core.Entities;
 
 public class Item
 {
-    private readonly IValidator<ItemDetailsModel> _validator;
+    private readonly IValidator<ItemModel> _validator;
     private readonly IItemRepository _repository;
     private readonly CancellationToken _cancellationToken;
 
-    public Item(IValidator<ItemDetailsModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
+    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
     {
         _validator = validator;
         _repository = repository;
         _cancellationToken = cancellationToken;
     }
 
-    public async Task<OneOf<Success, ItemFailureException>> Add(ItemDetailsModel item)
+    public async Task<OneOf<Success, ItemFailureException>> Add(ItemModel item)
     {
         var validate = _validator.Validate(item);
 
@@ -39,20 +39,24 @@ public class Item
         return new Success();
     }
 
-    public async Task<OneOf<Success, NotFound, ItemFailureException>> Update(ItemDetailsModel category)
+    public async Task<OneOf<Success, NotFound, ItemFailureException>> Update(ItemModel item)
     {
-        var validate = _validator.Validate(category);
+        var validate = _validator.Validate(item);
 
         if (!validate.IsValid)
             return new ItemFailureException(validate.Errors);
 
         try
         {
-            var response = await GetByName(category.Name);
-            if (response.IsT1)
+            var response = await GetByName(item.Name);
+            var (foundItem, itemReturned) = WasItemFound(response);
+
+            if (!foundItem)
                 return new NotFound();
 
-            await _repository.Update(category, _cancellationToken);
+            await _repository.Update(
+                item with { Id = itemReturned!.Id }, 
+                _cancellationToken);
         }
         catch (Exception ex)
         {
@@ -61,16 +65,23 @@ public class Item
 
         return new Success();
     }
+
+    private static (bool, ItemModel?) WasItemFound(OneOf<ItemModel, None> response) =>
+        response.Match<(bool,ItemModel?)>(
+            item => (true, item),
+            _ => (false, null));
 
     public async Task<OneOf<Success, NotFound, ItemFailureException>> Delete(string name)
     {
         try
         {
             var response = await GetByName(name);
-            if (response.IsT1)
+            var (foundItem, item) = WasItemFound(response);
+
+            if (!foundItem)
                 return new NotFound();
 
-            await _repository.Delete(name, _cancellationToken);
+            await _repository.Delete(item!.Id, _cancellationToken);
         }
         catch (Exception ex)
         {
@@ -80,7 +91,7 @@ public class Item
         return new Success();
     }
 
-    public async Task<OneOf<IReadOnlyCollection<ItemDetailsModel>, None>> GetAll()
+    public async Task<OneOf<IReadOnlyCollection<ItemModel>, None>> GetAll()
     {
         var response = await _repository.GetAll(_cancellationToken);
 
@@ -90,7 +101,7 @@ public class Item
         return response!.ToList().AsReadOnly();
     }
 
-    public async Task<OneOf<ItemDetailsModel, None>> GetByName(string name)
+    public async Task<OneOf<ItemModel, None>> GetByName(string name)
     {
         var response = await _repository.GetByName(name, _cancellationToken);
 

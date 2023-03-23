@@ -28,17 +28,20 @@ public class SetupTests
             CREATE TABLE Category (
                 Name    VARCHAR(50) PRIMARY KEY,
                 Image   TEXT,
-                Parent  VARCHAR(50))");
+                Parent  VARCHAR(50),
+                FOREIGN KEY (Parent) REFERENCES Category(Name))");
 
     public CommandDefinition CreateItemTable() =>
         new(@"
             CREATE TABLE Item (
-                Name        VARCHAR(50) PRIMARY KEY,
+                Id          INTEGER PRIMARY KEY,
+                Name        VARCHAR(50) NOT NULL,
+                Category    VARCHAR(50) NOT NULL,
                 Description TEXT,
                 Image       TEXT,
-                Category    VARCHAR(50) NOT NULL,
                 Price       REAL NOT NULL,
                 Amount      INTEGER NOT NULL,
+                UNIQUE (Name, Category),
                 FOREIGN KEY (Category) REFERENCES Category(Name))");
 
 }
