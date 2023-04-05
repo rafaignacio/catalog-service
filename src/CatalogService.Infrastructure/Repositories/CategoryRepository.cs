@@ -1,6 +1,7 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
 using CatalogService.Infrastructure.Configurations;
+using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 
 namespace CatalogService.Infrastructure.Repositories;
@@ -9,9 +10,9 @@ public class CategoryRepository : BaseRepository, ICategoryRepository
 {
     private static readonly ReadOnlyCollection<CategoryModel> EmptyList = new List<CategoryModel>().AsReadOnly();
 
-    public CategoryRepository(CatalogDatabaseConfiguration databaseConfiguration)
+    public CategoryRepository(IOptions<CatalogDatabaseConfiguration> databaseConfiguration)
     {
-        ConnectionString = databaseConfiguration.ConnectionString;
+        ConnectionString = databaseConfiguration.Value.ConnectionString;
     }
 
     public async Task Add(CategoryModel model, CancellationToken token = default) => 

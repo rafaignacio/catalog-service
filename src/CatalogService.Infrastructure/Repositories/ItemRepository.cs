@@ -1,7 +1,9 @@
 ﻿using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
 using CatalogService.Infrastructure.Configurations;
+using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
+using System.Text;
 
 namespace CatalogService.Infrastructure.Repositories;
 
@@ -9,9 +11,9 @@ public class ItemRepository : BaseRepository, IItemRepository
 {
     private static readonly ReadOnlyCollection<ItemModel> EmptyList = new List<ItemModel>().AsReadOnly();
 
-    public ItemRepository(CatalogDatabaseConfiguration databaseConfiguration)
+    public ItemRepository(IOptions<CatalogDatabaseConfiguration> databaseConfiguration)
     {
-        ConnectionString = databaseConfiguration.ConnectionString;
+        ConnectionString = databaseConfiguration.Value.ConnectionString;
     }
 
     public async Task Add(ItemModel model, CancellationToken token = default) =>
@@ -22,9 +24,14 @@ public class ItemRepository : BaseRepository, IItemRepository
     public async Task Delete(long id, CancellationToken token = default) =>
         await ExecuteAsync("DELETE FROM Item WHERE Id = @Id", new { Id = id }, token);
 
-    public async Task<IReadOnlyCollection<ItemModel>> GetAll(CancellationToken token = default)
+    public async Task<IReadOnlyCollection<ItemModel>> GetAll(string? categoryId = null, ushort page = 0, ushort pageSize = 20, CancellationToken token = default)
     {
-        var list = await QueryAsync<ItemModel>("SELECT Id, Name, Description, Image, Category, Price, Amount FROM Item", token: token);
+        var list = await QueryAsync<ItemModel>(
+            $@"SELECT 
+                Id, Name, Description, Image, Category, Price, Amount 
+               FROM Item
+               WHERE (@categoryId IS NULL OR Category = @categoryId)
+               LIMIT @page OFFSET @pageSize", new { categoryId, page, pageSize }, token: token);
 
         if (list != null)
         {

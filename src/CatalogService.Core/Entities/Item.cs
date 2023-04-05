@@ -91,9 +91,9 @@ public class Item
         return new Success();
     }
 
-    public async Task<OneOf<IReadOnlyCollection<ItemModel>, None>> GetAll()
+    public async Task<OneOf<IReadOnlyCollection<ItemModel>, None>> GetAll(string? categoryId = null, ushort page = 0, ushort pageSize = 20)
     {
-        var response = await _repository.GetAll(_cancellationToken);
+        var response = await _repository.GetAll(categoryId, page, pageSize, _cancellationToken);
 
         if (response?.Count == 0)
             return new None();
