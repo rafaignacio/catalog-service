@@ -1,14 +1,10 @@
-using CatalogService.API.EndpointDefinitions;
-using CatalogService.Core.Interfaces;
+using CatalogService.API.Core;
 using CatalogService.Infrastructure;
 using CatalogService.Infrastructure.Configurations;
-using CatalogService.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IItemRepository, ItemRepository>();
-builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
-
+builder.Services.AddAllEndpointDefinitions();
 builder.Services.AddOptions();
 
 builder.Configuration.AddJsonFile("appsettings.json");
@@ -18,7 +14,7 @@ builder.Services.Configure<CatalogDatabaseConfiguration>(
 
 var app = builder.Build();
 
-CatalogEndpointDefinition.RegisterEndpoints(app);
+app.UseEndpointDefinitions();
 await CatalogDatabase.Initiate(
     builder.Configuration["CatalogDatabase:ConnectionString"]!);
 

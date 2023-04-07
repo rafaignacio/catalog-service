@@ -20,7 +20,7 @@ public class Item
         _cancellationToken = cancellationToken;
     }
 
-    public async Task<OneOf<Success, ItemFailureException>> Add(ItemModel item)
+    public async Task<OneOf<long, ItemFailureException>> Add(ItemModel item)
     {
         var validate = _validator.Validate(item);
 
@@ -29,30 +29,36 @@ public class Item
 
         try
         {
-            await _repository.Add(item, _cancellationToken);
+            return await _repository.Add(item, _cancellationToken);
         }
         catch (Exception ex)
         {
             return new ItemFailureException(ex.Message);
         }
-
-        return new Success();
     }
 
     public async Task<OneOf<Success, NotFound, ItemFailureException>> Update(ItemModel item)
     {
-        var validate = _validator.Validate(item);
-
-        if (!validate.IsValid)
-            return new ItemFailureException(validate.Errors);
-
         try
         {
-            var response = await GetByName(item.Name);
+            var response = await GetById(item.Id);
             var (foundItem, itemReturned) = WasItemFound(response);
 
             if (!foundItem)
                 return new NotFound();
+
+            item = MapChangedFields(item, itemReturned!);
+
+            var validate = _validator.Validate(item);
+
+            if (!validate.IsValid)
+                return new ItemFailureException(validate.Errors);
+
+            item = item with
+            {
+                Description = string.IsNullOrEmpty(item.Description) ? null : item.Description,
+                Image = string.IsNullOrEmpty(item.Image) ? null : item.Image,
+            };
 
             await _repository.Update(
                 item with { Id = itemReturned!.Id }, 
@@ -66,16 +72,33 @@ public class Item
         return new Success();
     }
 
+    private ItemModel MapChangedFields(ItemModel newValue, ItemModel existent) =>
+        new(existent.Id,
+            CompareField(newValue.Name, existent.Name),
+            CompareField(newValue.Description, existent.Description),
+            CompareField(newValue.Image, existent.Image),
+            CompareField(newValue.Category, existent.Category),
+            CompareField(newValue.Price, existent.Price),
+            CompareField(newValue.Amount, existent.Amount));
+
+    private T CompareField<T>(T x, T y) where T : IComparable<T>
+    {
+        if (x == null || x.CompareTo(default) == 0) return y;
+        if (x.CompareTo(y) != 0) return x;
+
+        return y;
+    }
+
     private static (bool, ItemModel?) WasItemFound(OneOf<ItemModel, None> response) =>
         response.Match<(bool,ItemModel?)>(
             item => (true, item),
             _ => (false, null));
 
-    public async Task<OneOf<Success, NotFound, ItemFailureException>> Delete(string name)
+    public async Task<OneOf<Success, NotFound, ItemFailureException>> Delete(long id)
     {
         try
         {
-            var response = await GetByName(name);
+            var response = await GetById(id);
             var (foundItem, item) = WasItemFound(response);
 
             if (!foundItem)
@@ -104,6 +127,16 @@ public class Item
     public async Task<OneOf<ItemModel, None>> GetByName(string name)
     {
         var response = await _repository.GetByName(name, _cancellationToken);
+
+        if (response == null)
+            return new None();
+
+        return response;
+    }
+
+    public async Task<OneOf<ItemModel, None>> GetById(long id)
+    {
+        var response = await _repository.GetById(id, _cancellationToken);
 
         if (response == null)
             return new None();

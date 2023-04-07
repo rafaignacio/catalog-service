@@ -25,6 +25,24 @@ public abstract class BaseRepository
         }
     }
 
+    public async Task<T> ExecuteScalarAsync<T>(string commandText, object? model = null, CancellationToken token = default)
+    {
+        using var connection = new SqliteConnection(ConnectionString);
+        await connection.OpenAsync(token);
+
+        try
+        {
+            var commandDefinition = new CommandDefinition(
+                commandText, model, cancellationToken: token);
+
+            return await connection.ExecuteScalarAsync<T>(commandDefinition);
+        }
+        finally
+        {
+            await connection.CloseAsync();
+        }
+    }
+
     public async Task<IEnumerable<T>> QueryAsync<T>(string commandText, object? model = null, CancellationToken token = default)
     {
         using var connection = new SqliteConnection(ConnectionString);
