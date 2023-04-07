@@ -3,6 +3,7 @@ using CatalogService.Core.Validators;
 using CatalogService.Infrastructure.Configurations;
 using CatalogService.Infrastructure.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 
 namespace CatalogService.IntegrationTest;
 
@@ -12,10 +13,11 @@ public class ItemShould
     private Item _sut = new Item(
             new ItemValidator(),
             new ItemRepository(
-                new CatalogDatabaseConfiguration
-                {
-                    ConnectionString = Constants.ConnectionString
-                }));
+                Options.Create(
+                    new CatalogDatabaseConfiguration
+                    {
+                        ConnectionString = Constants.ConnectionString
+                    })));
 
     [Test, Order(1)]
     public async Task Create_a_new_item()
@@ -31,7 +33,7 @@ public class ItemShould
         var description = "Recycable paper";
         var category = "Stationery";
 
-        var response = await _sut.Update(new(name, description, null, category, 1.5, 10));
+        var response = await _sut.Update(new(1, name, description, null, category, 1.5, 10));
         response.IsT0.Should().BeTrue();
 
         var item = await _sut.GetByName(name);
@@ -44,8 +46,7 @@ public class ItemShould
     [Test, Order(3)]
     public async Task Delete_item_successfully()
     {
-        var name = "Paper";
-        var response = await _sut.Delete(name);
+        var response = await _sut.Delete(1);
         response.IsT0.Should().BeTrue();
 
         var category = await _sut.GetAll();

@@ -1,4 +1,5 @@
 using CatalogService.Core.Exceptions;
+using CatalogService.Core.Helpers;
 using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
 using FluentValidation;
@@ -74,20 +75,12 @@ public class Item
 
     private ItemModel MapChangedFields(ItemModel newValue, ItemModel existent) =>
         new(existent.Id,
-            CompareField(newValue.Name, existent.Name),
-            CompareField(newValue.Description, existent.Description),
-            CompareField(newValue.Image, existent.Image),
-            CompareField(newValue.Category, existent.Category),
-            CompareField(newValue.Price, existent.Price),
-            CompareField(newValue.Amount, existent.Amount));
-
-    private T CompareField<T>(T x, T y) where T : IComparable<T>
-    {
-        if (x == null || x.CompareTo(default) == 0) return y;
-        if (x.CompareTo(y) != 0) return x;
-
-        return y;
-    }
+            ComparerHelper.CompareField(newValue.Name, existent.Name),
+            ComparerHelper.CompareField(newValue.Description, existent.Description),
+            ComparerHelper.CompareField(newValue.Image, existent.Image),
+            ComparerHelper.CompareField(newValue.Category, existent.Category),
+            ComparerHelper.CompareField(newValue.Price, existent.Price),
+            ComparerHelper.CompareField(newValue.Amount, existent.Amount));
 
     private static (bool, ItemModel?) WasItemFound(OneOf<ItemModel, None> response) =>
         response.Match<(bool,ItemModel?)>(

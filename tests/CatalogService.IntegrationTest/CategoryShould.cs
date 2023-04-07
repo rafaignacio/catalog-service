@@ -3,6 +3,7 @@ using CatalogService.Core.Validators;
 using CatalogService.Infrastructure.Configurations;
 using CatalogService.Infrastructure.Repositories;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 
 namespace CatalogService.IntegrationTest;
 
@@ -12,10 +13,10 @@ public class CategoryShould
     private Category _sut = new Category(
             new CategoryValidator(),
             new CategoryRepository(
-                new CatalogDatabaseConfiguration
+                Options.Create( new CatalogDatabaseConfiguration
                 {
                     ConnectionString = Constants.ConnectionString
-                }));
+                })));
 
     [Test, Order(1)]
     public async Task Create_a_new_category_successfully()
