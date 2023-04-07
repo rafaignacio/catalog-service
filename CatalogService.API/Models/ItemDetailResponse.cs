@@ -1,4 +1,5 @@
-﻿using CatalogService.Core.Models;
+﻿using CatalogService.Core.Entities;
+using CatalogService.Core.Models;
 using System.Text.Json.Serialization;
 
 namespace CatalogService.API.Models;
@@ -23,6 +24,13 @@ public record ItemDetailResponse : ItemModel
                     Verb = "DELETE",
                     Href = location
                 },
-            };
+        };
+    }
+
+    [JsonConstructor]
+    public ItemDetailResponse(long id, string name, string description, string image, string category, double price, long amount, object links) : this(id, 
+        new(id, name, description, image, category, price, amount))
+    {
+
     }
 }

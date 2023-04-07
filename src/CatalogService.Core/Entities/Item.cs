@@ -50,16 +50,16 @@ public class Item
 
             item = MapChangedFields(item, itemReturned!);
 
-            var validate = _validator.Validate(item);
-
-            if (!validate.IsValid)
-                return new ItemFailureException(validate.Errors);
-
             item = item with
             {
                 Description = string.IsNullOrEmpty(item.Description) ? null : item.Description,
                 Image = string.IsNullOrEmpty(item.Image) ? null : item.Image,
             };
+
+            var validate = _validator.Validate(item);
+
+            if (!validate.IsValid)
+                return new ItemFailureException(validate.Errors);
 
             await _repository.Update(
                 item with { Id = itemReturned!.Id }, 
