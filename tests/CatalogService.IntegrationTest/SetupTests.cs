@@ -26,7 +26,8 @@ public class SetupTests
     public CommandDefinition CreateCategoryTable() =>
         new (@"
             CREATE TABLE Category (
-                Name    VARCHAR(50) PRIMARY KEY,
+                Id      INTEGER PRIMARY KEY,
+                Name    VARCHAR(50) NOT NULL UNIQUE,
                 Image   TEXT,
                 Parent  VARCHAR(50),
                 FOREIGN KEY (Parent) REFERENCES Category(Name))");
@@ -42,6 +43,8 @@ public class SetupTests
                 Price       REAL NOT NULL,
                 Amount      INTEGER NOT NULL,
                 UNIQUE (Name, Category),
-                FOREIGN KEY (Category) REFERENCES Category(Name))");
+                CONSTRAINT fk_item_category
+                FOREIGN KEY (Category) REFERENCES Category(Name)
+                ON DELETE CASCADE)");
 
 }

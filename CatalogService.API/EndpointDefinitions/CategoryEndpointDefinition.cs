@@ -82,13 +82,13 @@ public class CategoryEndpointDefinition : IEndpointDefinition
                 Results.Problem(exception.Message, statusCode: 500));
     }
 
-    private static async Task<IResult> DeleteCategory([FromRoute] string name,
+    private static async Task<IResult> DeleteCategory([FromRoute] long id,
         [FromServices] IValidator<CategoryModel> validator,
         [FromServices] ICategoryRepository repository,
         CancellationToken token = default)
     {
         var category = new Category(validator, repository, token);
-        var result = await category.Delete(name);
+        var result = await category.Delete(id);
 
         return result.Match(
             _ => Results.NoContent(),

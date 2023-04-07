@@ -17,7 +17,8 @@ public static class CatalogDatabase
     private static CommandDefinition CreateCategoryTable() =>
         new(@"
             CREATE TABLE IF NOT EXISTS Category (
-                Name    VARCHAR(50) PRIMARY KEY,
+                Id      INTEGER PRIMARY KEY,
+                Name    VARCHAR(50) NOT NULL UNIQUE,
                 Image   TEXT,
                 Parent  VARCHAR(50),
                 FOREIGN KEY (Parent) REFERENCES Category(Name))");
@@ -33,5 +34,6 @@ public static class CatalogDatabase
                 Price       REAL NOT NULL,
                 Amount      INTEGER NOT NULL,
                 UNIQUE (Name, Category),
-                FOREIGN KEY (Category) REFERENCES Category(Name))");
+                FOREIGN KEY (Category) REFERENCES Category(Name)
+                ON DELETE CASCADE)");
 }

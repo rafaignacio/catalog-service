@@ -4,6 +4,7 @@ using CatalogService.Infrastructure.Configurations;
 using CatalogService.Infrastructure.Repositories;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using System.Xml.Linq;
 
 namespace CatalogService.IntegrationTest;
 
@@ -38,7 +39,7 @@ public class CategoryShould
         var name = "Stationery";
         var image = "stationery.png";
 
-        var response = await _sut.Update( new (name, image, null) );
+        var response = await _sut.Update( new (1, name, image, null) );
         response.IsT0.Should().BeTrue();
 
         var category = await _sut.GetByName(name);
@@ -49,8 +50,7 @@ public class CategoryShould
     [Test, Order(4)]
     public async Task Delete_category_successfully()
     {
-        var name = "Staples";
-        var response = await _sut.Delete(name);
+        var response = await _sut.Delete(2);
         response.IsT0.Should().BeTrue();
 
         var category = await _sut.GetAll();

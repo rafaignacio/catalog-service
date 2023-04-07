@@ -1,4 +1,5 @@
 using CatalogService.Core.Exceptions;
+using CatalogService.Core.Helpers;
 using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
 using FluentValidation;
@@ -19,7 +20,7 @@ public class Category {
         _cancellationToken = cancellationToken;
     }
 
-    public async Task<OneOf<Success, CategoryFailureException>> Add(CategoryModel category)
+    public async Task<OneOf<long, CategoryFailureException>> Add(CategoryModel category)
     {
         var validate = _validator.Validate(category);
 
@@ -28,28 +29,30 @@ public class Category {
 
         try
         {
-            await _repository.Add(category, _cancellationToken);
+            return await _repository.Add(category, _cancellationToken);
         }
         catch (Exception ex)
         {
             return new CategoryFailureException(ex.Message);
         }
-
-        return new Success();
     }
 
     public async Task<OneOf<Success, NotFound, CategoryFailureException>> Update(CategoryModel category)
     {
-        var validate = _validator.Validate(category);
-
-        if (!validate.IsValid)
-            return new CategoryFailureException(validate.Errors);
 
         try
         {
-            var response = await GetByName(category.Name);
+            var response = await GetById(category.Id);
             if (response.IsT1)
                 return new NotFound();
+
+            var retrieved = response.AsT0;
+
+            category = MapChangedFields(category, retrieved);
+
+            var validate = _validator.Validate(category);
+            if (!validate.IsValid)
+                return new CategoryFailureException(validate.Errors);
 
             await _repository.Update(category, _cancellationToken);
         }
@@ -61,15 +64,21 @@ public class Category {
         return new Success();
     }
 
-    public async Task<OneOf<Success, NotFound, CategoryFailureException>> Delete(string name)
+    private CategoryModel MapChangedFields(CategoryModel newValue, CategoryModel existent) =>
+        new(existent.Id,
+            ComparerHelper.CompareField(newValue.Name, existent.Name),
+            ComparerHelper.CompareField(newValue.Image!, existent.Image!),
+            ComparerHelper.CompareField(newValue.Parent!, existent.Parent!));
+
+    public async Task<OneOf<Success, NotFound, CategoryFailureException>> Delete(long id)
     {
         try
         {
-            var response = await GetByName(name);
+            var response = await GetById(id);
             if (response.IsT1)
                 return new NotFound();
 
-            await _repository.Delete(name, _cancellationToken);
+            await _repository.Delete(id, _cancellationToken);
         }
         catch (Exception ex)
         {
@@ -94,6 +103,16 @@ public class Category {
         var response = await _repository.GetByName(name, _cancellationToken);
 
         if (response == null) 
+            return new None();
+
+        return response;
+    }
+
+    public async Task<OneOf<CategoryModel, None>> GetById(long id)
+    {
+        var response = await _repository.GetById(id, _cancellationToken);
+
+        if (response == null)
             return new None();
 
         return response;
