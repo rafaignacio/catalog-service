@@ -19,3 +19,6 @@ await CatalogDatabase.Initiate(
     builder.Configuration["CatalogDatabase:ConnectionString"]!);
 
 app.Run();
+
+
+public partial class Program { }

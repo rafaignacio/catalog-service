@@ -11,7 +11,7 @@ public static class CatalogDatabase
         await connection.OpenAsync();
         await connection.ExecuteAsync(CreateCategoryTable());
         await connection.ExecuteAsync(CreateItemTable());
-        connection.Close();
+        await connection.CloseAsync();
     }
 
     private static CommandDefinition CreateCategoryTable() =>

@@ -4,7 +4,6 @@ using CatalogService.Infrastructure.Configurations;
 using CatalogService.Infrastructure.Repositories;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
-using System.Xml.Linq;
 
 namespace CatalogService.IntegrationTest;
 

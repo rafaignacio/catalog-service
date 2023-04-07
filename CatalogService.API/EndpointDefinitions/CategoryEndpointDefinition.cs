@@ -8,6 +8,7 @@ using CatalogService.Core.Validators;
 using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 
 namespace CatalogService.API.EndpointDefinitions;
 
@@ -36,9 +37,9 @@ public class CategoryEndpointDefinition : IEndpointDefinition
             .WithName("List Categories");
         app.MapPost("/categories", AddCategory)
             .WithName("Add Categories");
-        app.MapPut("/categories/{name}", UpdateCategory)
+        app.MapPut("/categories/{id}", UpdateCategory)
             .WithName("Update Category");
-        app.MapDelete("/categories/{name}", DeleteCategory)
+        app.MapDelete("/categories/{id}", DeleteCategory)
             .WithName("Delete Category");
     }
 
@@ -48,31 +49,28 @@ public class CategoryEndpointDefinition : IEndpointDefinition
         services.AddSingleton<IValidator<CategoryModel>, CategoryValidator>();
     }
 
-    private static async Task<IResult> AddCategory([FromBody] CategoryModel model, 
+    private static async Task<IResult> AddCategory([FromBody] AddCategoryRequest body, 
         [FromServices] ICategoryRepository repository,
         [FromServices] IValidator<CategoryModel> validator,
         CancellationToken token = default)
     {
         var category = new Category(validator, repository, token);
-        var result = await category.Add(model);
-
-        var location = $"/categories/{model.Name}";
-
+        var result = await category.Add(body.ToCategoryModel());
         return result.Match(
-            _ => Results.Created(location, GetCategoryLinks(location)),
+            id => Results.Created($"/categories/{id}", new CategoryDetailResponse(id, body.ToCategoryModel())),
             exception => exception.Errors?.Count() > 0 ? 
                 Results.BadRequest(exception) : 
                 Results.Problem(exception.Message, statusCode: 500));
     }
 
-    private static async Task<IResult> UpdateCategory([FromRoute] string name, [FromBody] UpdateCategoryModel model,
+    private static async Task<IResult> UpdateCategory([FromRoute] long id, [FromBody] UpdateCategoryModel model,
         [FromServices] ICategoryRepository repository,
         [FromServices] IValidator<CategoryModel> validator,
         CancellationToken token = default)
     {
         var category = new Category(validator, repository, token);
         var result = await category.Update(
-            new (name, model.Image, model.Parent));
+            new (id, model.Name, model.Image, model.Parent));
 
         return result.Match(
             _ => Results.NoContent(),
