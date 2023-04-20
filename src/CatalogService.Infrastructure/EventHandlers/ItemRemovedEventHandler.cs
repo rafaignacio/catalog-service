@@ -5,20 +5,20 @@ using Microsoft.Extensions.Options;
 
 namespace CatalogService.Infrastructure.EventHandlers;
 
-public class ItemUpdatedEventHandler : INotificationHandler<ItemUpdated>
+public class ItemRemovedEventHandler : INotificationHandler<ItemRemoved>
 {
     private readonly IOptions<QueueConfiguration> _queueConfig;
 
-    public ItemUpdatedEventHandler(IOptions<QueueConfiguration> queueConfiguration)
+    public ItemRemovedEventHandler(IOptions<QueueConfiguration> queueConfiguration)
     {
         _queueConfig = queueConfiguration;
     }
 
-    public Task Handle(ItemUpdated notification, CancellationToken cancellationToken)
+    public Task Handle(ItemRemoved notification, CancellationToken cancellationToken)
     {
         var broker = new MessageBroker(_queueConfig.Value.ConnectionString);
 
-        broker.SendMessage(Constants.ItemChangesQueue, "ItemUpdated", notification);
+        broker.SendMessage(Constants.ItemChangesQueue, "ItemDeleted", notification);
 
         return Task.CompletedTask;
     }
