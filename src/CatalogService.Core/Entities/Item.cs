@@ -15,7 +15,7 @@ public class Item : Entity
     private readonly IItemRepository _repository;
     private readonly CancellationToken _cancellationToken;
 
-    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
+    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default) 
     {
         _validator = validator;
         _repository = repository;

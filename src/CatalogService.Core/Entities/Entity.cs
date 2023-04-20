@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using CatalogService.Core.Interfaces;
+using MediatR;
 
 namespace CatalogService.Core.Entities;
 
@@ -14,4 +15,13 @@ public abstract class Entity
 
     protected void RemoveDomainEvent(INotification @event) =>
         _events?.Remove(@event);
+
+    public async Task DispatchEvents(IEventDispatcher eventDispatcher)
+    {
+        if (_events?.Count == 0)
+            return;
+
+        foreach (var e in _events)
+            await eventDispatcher.Dispatch(e);
+    }
 }

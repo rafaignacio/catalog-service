@@ -5,8 +5,8 @@ using CatalogService.Core.Entities;
 using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
 using CatalogService.Core.Validators;
+using CatalogService.Infrastructure.EventHandlers;
 using CatalogService.Infrastructure.Repositories;
-using Dapper;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,6 +26,7 @@ public class ItemsEndpointDefinition : IEndpointDefinition
     {
         services.AddSingleton<IItemRepository, ItemRepository>();
         services.AddSingleton<IValidator<ItemModel>, ItemValidator>();
+        services.AddDomainEventHandlers();
     }
 
     private static async Task<IResult> ListItems([FromServices] IItemRepository repository,
@@ -52,6 +53,7 @@ public class ItemsEndpointDefinition : IEndpointDefinition
     private static async Task<IResult> AddItem([FromBody] AddItemModel model,
         [FromServices] IItemRepository repository,
         [FromServices] IValidator<ItemModel> validator,
+        [FromServices] IEventDispatcher eventDispatcher,
         CancellationToken token = default)
     {
         var item = new Item(validator, repository, token);
@@ -67,11 +69,14 @@ public class ItemsEndpointDefinition : IEndpointDefinition
     private static async Task<IResult> UpdateItem([FromRoute] long id, [FromBody] UpdateItemModel model,
         [FromServices] IItemRepository repository,
         [FromServices] IValidator<ItemModel> validator,
+        [FromServices] IEventDispatcher eventDispatcher,
         CancellationToken token = default)
     {
         var item = new Item(validator, repository, token);
         var result = await item.Update(
             new(id, model.Name, model.Description, model.Image, model.Category, model.Price, model.Amount));
+
+        await item.DispatchEvents(eventDispatcher);
 
         return result.Match(
             _ => Results.NoContent(),
@@ -84,10 +89,13 @@ public class ItemsEndpointDefinition : IEndpointDefinition
     private static async Task<IResult> DeleteItem([FromRoute] long id,
         [FromServices] IValidator<ItemModel> validator,
         [FromServices] IItemRepository repository,
+        [FromServices] IEventDispatcher eventDispatcher,
         CancellationToken token = default)
     {
         var item = new Item(validator, repository, token);
         var result = await item.Delete(id);
+
+        await item.DispatchEvents(eventDispatcher);
 
         return result.Match(
             _ => Results.NoContent(),

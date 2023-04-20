@@ -12,6 +12,9 @@ builder.Configuration.AddJsonFile("appsettings.json");
 builder.Services.Configure<CatalogDatabaseConfiguration>(
     builder.Configuration.GetSection(CatalogDatabaseConfiguration.Name) );
 
+builder.Services.Configure<QueueConfiguration>(
+    builder.Configuration.GetSection(QueueConfiguration.Name));
+
 var app = builder.Build();
 
 app.UseEndpointDefinitions();
