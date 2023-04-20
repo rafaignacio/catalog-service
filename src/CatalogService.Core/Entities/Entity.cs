@@ -18,7 +18,7 @@ public abstract class Entity
 
     public async Task DispatchEvents(IEventDispatcher eventDispatcher)
     {
-        if (_events?.Count == 0)
+        if (_events == null || _events.Count == 0)
             return;
 
         foreach (var e in _events)
