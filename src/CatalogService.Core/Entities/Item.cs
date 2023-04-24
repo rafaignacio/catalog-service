@@ -1,3 +1,4 @@
+using CatalogService.Core.DomainEvents;
 using CatalogService.Core.Exceptions;
 using CatalogService.Core.Helpers;
 using CatalogService.Core.Interfaces;
@@ -8,13 +9,13 @@ using OneOf.Types;
 
 namespace CatalogService.Core.Entities;
 
-public class Item
+public class Item : Entity
 {
     private readonly IValidator<ItemModel> _validator;
     private readonly IItemRepository _repository;
     private readonly CancellationToken _cancellationToken;
 
-    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default)
+    public Item(IValidator<ItemModel> validator, IItemRepository repository, CancellationToken cancellationToken = default) 
     {
         _validator = validator;
         _repository = repository;
@@ -64,6 +65,9 @@ public class Item
             await _repository.Update(
                 item with { Id = itemReturned!.Id }, 
                 _cancellationToken);
+
+            AddDomainEvent(
+                new ItemUpdated(item.Id, item.Name, item.Description, item.Image, item.Category, item.Price, item.Amount));
         }
         catch (Exception ex)
         {
@@ -98,6 +102,7 @@ public class Item
                 return new NotFound();
 
             await _repository.Delete(item!.Id, _cancellationToken);
+            AddDomainEvent(new ItemRemoved(item.Id));
         }
         catch (Exception ex)
         {

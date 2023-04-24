@@ -56,6 +56,7 @@ public class CategoryEndpointDefinition : IEndpointDefinition
     {
         var category = new Category(validator, repository, token);
         var result = await category.Add(body.ToCategoryModel());
+
         return result.Match(
             id => Results.Created($"/categories/{id}", new CategoryDetailResponse(id, body.ToCategoryModel())),
             exception => exception.Errors?.Count() > 0 ? 
