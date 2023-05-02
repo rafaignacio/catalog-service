@@ -1,6 +1,6 @@
 ﻿using CatalogService.API.Core;
 using CatalogService.API.Models;
-using CatalogService.API.Utils;
+using CatalogService.API.Security;
 using CatalogService.Core.Entities;
 using CatalogService.Core.Interfaces;
 using CatalogService.Core.Models;
@@ -8,7 +8,6 @@ using CatalogService.Core.Validators;
 using CatalogService.Infrastructure.Repositories;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
 
 namespace CatalogService.API.EndpointDefinitions;
 
@@ -34,12 +33,16 @@ public class CategoryEndpointDefinition : IEndpointDefinition
     public void DefineEndpoints(WebApplication app)
     {
         app.MapGet("/categories", ListCategories)
+            .RequireAuthorization(Permissions.ReadCategory)
             .WithName("List Categories");
         app.MapPost("/categories", AddCategory)
+            .RequireAuthorization(Permissions.CreateCategory)
             .WithName("Add Categories");
         app.MapPut("/categories/{id}", UpdateCategory)
+            .RequireAuthorization(Permissions.UpdateCategory)
             .WithName("Update Category");
         app.MapDelete("/categories/{id}", DeleteCategory)
+            .RequireAuthorization(Permissions.DeleteCategory)
             .WithName("Delete Category");
     }
 
