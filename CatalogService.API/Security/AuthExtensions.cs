@@ -42,6 +42,11 @@ public static class AuthExtensions
             cfg.AddPolicy(Permissions.ReadCategory, policy => policy.RequireScope(Scopes.ReadCategory));
             cfg.AddPolicy(Permissions.UpdateCategory, policy => policy.RequireScope(Scopes.UpdateCategory));
             cfg.AddPolicy(Permissions.DeleteCategory, policy => policy.RequireScope(Scopes.DeleteCategory));
+
+            cfg.AddPolicy(Permissions.CreateItem, policy => policy.RequireScope(Scopes.CreateItem));
+            cfg.AddPolicy(Permissions.ReadItem, policy => policy.RequireScope(Scopes.ReadItem));
+            cfg.AddPolicy(Permissions.UpdateItem, policy => policy.RequireScope(Scopes.UpdateItem));
+            cfg.AddPolicy(Permissions.DeleteItem, policy => policy.RequireScope(Scopes.DeleteItem));
         });
 
         return services;
