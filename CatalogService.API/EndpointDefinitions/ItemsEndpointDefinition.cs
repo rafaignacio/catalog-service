@@ -1,5 +1,6 @@
 ﻿using CatalogService.API.Core;
 using CatalogService.API.Models;
+using CatalogService.API.Security;
 using CatalogService.API.Utils;
 using CatalogService.Core.Entities;
 using CatalogService.Core.Interfaces;
@@ -16,10 +17,14 @@ public class ItemsEndpointDefinition : IEndpointDefinition
 {
     public void DefineEndpoints(WebApplication app)
     {
-        app.MapGet("/items", ListItems);
-        app.MapPost("/items", AddItem);
-        app.MapPut("/items/{id}", UpdateItem);
-        app.MapDelete("/items/{id}", DeleteItem);
+        app.MapGet("/items", ListItems)
+            .RequireAuthorization(Permissions.ReadItem);
+        app.MapPost("/items", AddItem)
+            .RequireAuthorization(Permissions.CreateItem);
+        app.MapPut("/items/{id}", UpdateItem)
+            .RequireAuthorization(Permissions.UpdateItem);
+        app.MapDelete("/items/{id}", DeleteItem)
+            .RequireAuthorization(Permissions.DeleteItem);
     }
 
     public void DefineServices(IServiceCollection services)
