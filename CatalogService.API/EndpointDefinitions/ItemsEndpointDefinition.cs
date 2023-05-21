@@ -19,6 +19,8 @@ public class ItemsEndpointDefinition : IEndpointDefinition
     {
         app.MapGet("/items", ListItems)
             .RequireAuthorization(Permissions.ReadItem);
+        app.MapGet("/items/{id}/properties", GetItemProperties)
+            .RequireAuthorization(Permissions.ReadItem);
         app.MapPost("/items", AddItem)
             .RequireAuthorization(Permissions.CreateItem);
         app.MapPut("/items/{id}", UpdateItem)
@@ -54,6 +56,10 @@ public class ItemsEndpointDefinition : IEndpointDefinition
             _ => Results.Ok(
                 Array.Empty<ItemModel>()));
     }
+
+    private static Task<IResult> GetItemProperties(long id) =>
+        Task.FromResult(Results.Ok(
+            new Dictionary<string, string> { { "brand", "Samsung" }, { "model", "S 10" } }));
 
     private static async Task<IResult> AddItem([FromBody] AddItemModel model,
         [FromServices] IItemRepository repository,
